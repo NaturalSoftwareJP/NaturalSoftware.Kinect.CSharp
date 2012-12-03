@@ -35,7 +35,7 @@ namespace NaturalSoftware.Kinect.TestApp
 
                 canvasSkeleton.Children.Clear();
                 foreach ( var skeleton in e.SkeletonFrame.GetTrackedOrPositionOnlySkeleton() ) {
-                    skeletonDrawer.Draw( skeleton );
+                        skeletonDrawer.Draw( skeleton );
                 }
             }
             catch ( Exception ex ) {
@@ -54,7 +54,8 @@ namespace NaturalSoftware.Kinect.TestApp
                 kinect.AllFrameReady += kinect_AllFrameReady;
                 kinect.Start();
 
-                skeletonDrawer = new KinectSkeletonDrawer( kinect.Sensor, canvasSkeleton );
+                skeletonDrawer =
+                    new KinectSkeletonDrawer( kinect.Sensor, canvasSkeleton );
             }
             catch ( Exception ex ) {
                 MessageBox.Show( ex.Message );
