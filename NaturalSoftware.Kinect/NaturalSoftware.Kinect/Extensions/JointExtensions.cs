@@ -12,5 +12,22 @@ namespace NaturalSoftware.Kinect
 {
     public static class JointExtensions
     {
-    }
+        static JointType[] nearModeJoints = new JointType[] {
+            JointType.ShoulderCenter,
+            JointType.Head,
+            JointType.ShoulderLeft,
+            JointType.ElbowLeft,
+            JointType.WristLeft,
+            JointType.HandLeft,
+            JointType.ShoulderRight,
+            JointType.ElbowRight,
+            JointType.WristRight,
+            JointType.HandRight,
+        };
+
+        public static bool IsNearModeJoint( this Joint joint )
+        {
+            return nearModeJoints.Where( type => (joint.JointType == type) ).Count() != 0;
+        }
+    } 
 }
