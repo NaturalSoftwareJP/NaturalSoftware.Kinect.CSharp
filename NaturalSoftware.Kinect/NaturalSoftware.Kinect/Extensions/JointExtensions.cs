@@ -40,5 +40,12 @@ namespace NaturalSoftware.Kinect
             return (joint.TrackingState == JointTrackingState.Tracked) ||
                    (joint.TrackingState == JointTrackingState.Inferred);
         }
+
+        public static double Distance( this Joint joint, Joint dest )
+        {
+            return Math.Sqrt( Math.Pow( (joint.Position.X - dest.Position.X), 2 ) +
+                              Math.Pow( (joint.Position.Y - dest.Position.Y), 2 ) + 
+                              Math.Pow( (joint.Position.Z - dest.Position.Z), 2 ) );
+        }
     } 
 }
