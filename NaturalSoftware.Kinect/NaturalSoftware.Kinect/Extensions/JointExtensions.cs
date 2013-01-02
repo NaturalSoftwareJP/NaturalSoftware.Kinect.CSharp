@@ -29,5 +29,16 @@ namespace NaturalSoftware.Kinect
         {
             return nearModeJoints.Where( type => (joint.JointType == type) ).Count() != 0;
         }
+
+        public static bool IsTracking( this Joint joint )
+        {
+            return joint.TrackingState == JointTrackingState.Tracked;
+        }
+
+        public static bool IsTrackingOrInferred( this Joint joint )
+        {
+            return (joint.TrackingState == JointTrackingState.Tracked) ||
+                   (joint.TrackingState == JointTrackingState.Inferred);
+        }
     } 
 }
