@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -9,12 +10,39 @@ namespace NaturalSoftware.Kinect
     public class KinectSkeletonDrawer
     {
         KinectSensor kinect;
+        CoordinateMapper mapper;
         Canvas canvas;
 
+        /// <summary>
+        /// スケルトン座標を、カラーカメラの座標にするか、Depthカメラ座標にするか
+        /// </summary>
+        public enum Skeleton2DPoint
+        {
+            Color,
+            Depth,
+        }
+
+        /// <summary>
+        /// 変換種別
+        /// </summary>
+        public Skeleton2DPoint SkeletonConvert
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
+        /// <param name="kinect"></param>
+        /// <param name="canvas"></param>
         public KinectSkeletonDrawer( KinectSensor kinect, Canvas canvas )
         {
             this.kinect = kinect;
+            this.mapper = kinect.CoordinateMapper;
             this.canvas = canvas;
+
+            SkeletonConvert = Skeleton2DPoint.Depth;
         }
 
         /// <summary>
@@ -59,10 +87,11 @@ namespace NaturalSoftware.Kinect
             }
 
             // 3次元座標を距離カメラの2次元座標に変換する
-            var startPoint = kinect.CoordinateMapper.MapSkeletonPointToDepthPoint(
-                skeleton.Joints[start].Position, kinect.DepthStream.Format );
-            var endPoint = kinect.CoordinateMapper.MapSkeletonPointToDepthPoint(
-                skeleton.Joints[end].Position, kinect.DepthStream.Format );
+            var startPoint = SkeletonToPiont( skeleton.Joints[start].Position );
+            var endPoint = SkeletonToPiont( skeleton.Joints[end].Position );
+            if ( !IsDrawablePoint( startPoint ) || !IsDrawablePoint( endPoint ) ) {
+                return;
+            }
 
 
             // ジョイント間の線を引く
@@ -86,8 +115,10 @@ namespace NaturalSoftware.Kinect
             const int R = 5;
 
             // スケルトンの座標を、Depthカメラの座標に変換する
-            var point = kinect.CoordinateMapper.MapSkeletonPointToDepthPoint(
-                position, kinect.DepthStream.Format );
+            var point = SkeletonToPiont( position );
+            if ( !IsDrawablePoint( point ) ) {
+                return;
+            }
 
             // 円を描く
             canvas.Children.Add( new Ellipse()
@@ -97,6 +128,42 @@ namespace NaturalSoftware.Kinect
                 Width = R * 2,
                 Height = R * 2,
             } );
+        }
+
+        /// <summary>
+        /// スケルトン(3D)座標を2D座標に変換する
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        private Point SkeletonToPiont( SkeletonPoint position )
+        {
+            Point point;
+            Point _2d;
+            if ( SkeletonConvert == Skeleton2DPoint.Color ) {
+                var p = mapper.MapSkeletonPointToColorPoint( position, kinect.ColorStream.Format );
+                point = new Point( p.X, p.Y );
+                _2d = new Point( kinect.ColorStream.FrameWidth, kinect.ColorStream.FrameHeight );
+            }
+            else {
+                var p = mapper.MapSkeletonPointToDepthPoint( position, kinect.DepthStream.Format );
+                point = new Point( p.X, p.Y );
+                _2d = new Point( kinect.DepthStream.FrameWidth, kinect.DepthStream.FrameHeight );
+            }
+
+            return KinectUtility.ScaleTo( point, _2d, new Point( canvas.ActualWidth, canvas.ActualHeight ) );
+        }
+
+        /// <summary>
+        /// キャンバスに描画可能な座標か確認
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        bool IsDrawablePoint( Point point )
+        {
+            bool expr1 = (0 <= point.X) && (point.X < canvas.ActualWidth);
+            bool expr2 = (0 <= point.Y) && (point.Y < canvas.ActualHeight);
+
+            return expr1 && expr2;
         }
     }
 }

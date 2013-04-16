@@ -37,7 +37,7 @@ namespace NaturalSoftware.Kinect
             var skeletons = frame.ToSkeletonData();
             foreach ( var skeleton in skeletons ) {
                 if ( skeleton.TrackingState != SkeletonTrackingState.NotTracked ) {
-                    double new_ = Distance( centerPosition, skeleton.Position );
+                    double new_ = Distance_XY( centerPosition, skeleton.Position );
                     if ( (new_ < distance) ) {
                         player = skeleton;
                         distance = new_;
@@ -53,7 +53,7 @@ namespace NaturalSoftware.Kinect
             }
         }
 
-        private static double Distance( SkeletonPoint centerPosition, SkeletonPoint position )
+        private static double Distance_XY( SkeletonPoint centerPosition, SkeletonPoint position )
         {
             return Math.Sqrt( Math.Pow( (centerPosition.X - position.X), 2 ) + Math.Pow( (centerPosition.Z - position.Z), 2 ) );
         }

@@ -94,6 +94,56 @@ namespace NaturalSoftware.Kinect
         /// <param name="depthFrame"></param>
         /// <param name="depthStream"></param>
         /// <returns></returns>
+        public static BitmapSource ToBitmapSource( this DepthImageFrame depthFrame, KinectSensor kinect )
+        {
+            return BitmapSource.Create( depthFrame.Width,
+                          depthFrame.Height, 96, 96, DepthPixelFormat, null,
+                          ConvertDepthToColor( depthFrame, kinect ),
+                          depthFrame.Width * BytesPerPixel );
+        }
+
+        /// <summary>
+        /// 距離データをカラー画像に変換する
+        /// </summary>
+        /// <param name="depthFrame"></param>
+        /// <returns></returns>
+        private static byte[] ConvertDepthToColor( DepthImageFrame depthFrame, KinectSensor kinect )
+        {
+            // 距離カメラのピクセルごとのデータを取得する
+            short[] depthPixel = depthFrame.ToPixelData();
+
+            // 画像化データを作成する
+            byte[] depthColor = new byte[depthFrame.Width * depthFrame.Height * BytesPerPixel];
+
+            var colorPoints = new ColorImagePoint[kinect.ColorStream.FrameWidth * kinect.ColorStream.FrameHeight];
+            kinect.CoordinateMapper.MapDepthFrameToColorFrame(kinect.DepthStream.Format,
+                depthFrame.ToDepthImagePixel(), kinect.ColorStream.Format, colorPoints
+                );
+
+            // 画像化する
+            for ( int i = 0; i < depthPixel.Length; i++ ) {
+                // 距離カメラのデータから、距離とプレイヤーIDを取得する
+                int distance = depthPixel[i] >> DepthImageFrame.PlayerIndexBitmaskWidth;
+                int player = depthPixel[i] & DepthImageFrame.PlayerIndexBitmask;
+
+                // バイトインデックスを計算する
+                int index = (colorPoints[i].Y * kinect.ColorStream.FrameWidth + colorPoints[i].X) * BytesPerPixel;
+
+                byte gray = (byte)~(byte)KinectUtility.ScaleTo( distance, 0x0FFF, 0xFF );
+                depthColor[index + 0] = gray;
+                depthColor[index + 1] = gray;
+                depthColor[index + 2] = gray;
+            }
+
+            return depthColor;
+        }
+
+        /// <summary>
+        /// BitmapSourceに変換する
+        /// </summary>
+        /// <param name="depthFrame"></param>
+        /// <param name="depthStream"></param>
+        /// <returns></returns>
         public static BitmapSource ToBitmapSource( this DepthImageFrame depthFrame, DepthImageStream depthStream )
         {
             return BitmapSource.Create( depthFrame.Width,

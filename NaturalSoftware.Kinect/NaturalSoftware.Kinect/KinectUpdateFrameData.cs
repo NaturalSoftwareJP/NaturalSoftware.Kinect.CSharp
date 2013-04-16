@@ -45,6 +45,13 @@ namespace NaturalSoftware.Kinect
             SkeletonFrame = e.OpenSkeletonFrame();
         }
 
+        public KinectUpdateFrameData( KinectSensorWrapper kinect, int millisecondsWait )
+        {
+            ColorFrame = kinect.Sensor.ColorStream.OpenNextFrame( millisecondsWait );
+            DepthFrame = kinect.Sensor.DepthStream.OpenNextFrame( millisecondsWait );
+            SkeletonFrame = kinect.Sensor.SkeletonStream.OpenNextFrame( millisecondsWait );
+        }
+
         ~KinectUpdateFrameData()
         {
             Dispose( false );

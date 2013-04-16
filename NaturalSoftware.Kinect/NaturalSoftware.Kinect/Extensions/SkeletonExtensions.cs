@@ -30,5 +30,16 @@ namespace NaturalSoftware.Kinect
                    where j.TrackingState != JointTrackingState.NotTracked
                    select j;
         }
+
+        /// <summary>
+        /// 追跡されているJointの一覧を取得する
+        /// </summary>
+        /// <param name="skeleton"></param>
+        /// <returns></returns>
+        public static IEnumerable<Joint> GetNearModeJoints( this Skeleton skeleton )
+        {
+            return skeleton.Joints
+                .Where( joint => joint.IsNearModeJoint() );
+        }
     }
 }
