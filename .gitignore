@@ -94,3 +94,5 @@ build/
 .omakedb*
 *.omc
 
+#nuget
+*.nupkg
